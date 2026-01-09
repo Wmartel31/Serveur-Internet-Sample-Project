@@ -33,11 +33,11 @@ export default {
   },
   methods: {
     async loadTasks() {
-      const res = await fetch("http://localhost:3000/api/tasks");
+      const res = await fetch("http://localhost:5000/api/tasks");
       this.tasks = await res.json();
     },
     async addTask() {
-      await fetch("http://localhost:3000/api/tasks", {
+      await fetch("http://localhost:5000/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: this.newTask }),
