@@ -22,14 +22,20 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: GH_TOKEN
           script: |
-            # 1. Se déplacer dans le répertoire sur le serveur
-            cd ~/srv/traefik
-            
-            # 2. Supprimer l'ancien dossier pour éviter les conflits
+           # 1. Cloner le dépôt dans un dossier temporaire
+            cd ~
+            rm -rf Serveur-Internet-Sample-Project
+            git clone https://$GH_TOKEN@github.com/Wmartel31/Serveur-Internet-Sample-Project.git
+  
+            # 2. Copier les fichiers de config vers le dossier actif (écrase les anciens fichiers)
+            cp -r ~/Serveur-Internet-Sample-Project/srv/* ~/srv/
+  
+            # 3. Nettoyer le dossier temporaire cloné
             rm -rf Serveur-Internet-Sample-Project
             
-            # 3. Cloner votre répertoire en utilisant le token
-            git clone https://$GH_TOKEN@github.com/Wmartel31/Serveur-Internet-Sample-Project.git
-            
             # 4. Lancer votre infrastructure
+            docker compose up -d --build
+            
+            # 5. Lancer votre infrastructure
+            cd ~/srv/traefik
             docker compose up -d --build
