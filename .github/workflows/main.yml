@@ -33,7 +33,8 @@ jobs:
             # 3. Nettoyer le dossier temporaire cloné
             rm -rf Serveur-Internet-Sample-Project
             
-            # 4. Lancer votre infrastructure
+            # 4. Lancer l'infrastructure Traefik (Correction ici)
+            cd ~/srv/traefik
             docker compose up -d --build
             
             # 5. Lancer votre infrastructure
