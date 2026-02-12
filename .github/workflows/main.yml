@@ -82,13 +82,6 @@ jobs:
             # --- TRAEFIK ---
             mkdir -p ~/srv/traefik
             cat <<EOF > ~/srv/traefik/.env
-            DOMAIN=${DOMAIN}
-            DOMAIN_TINYAUTH=${DOMAIN_TINYAUTH}
-            NETWORK_NAME=${NETWORK_NAME}
-            TRAEFIK_SUBDOMAIN=${TRAEFIK_SUBDOMAIN}
-            AUTH_MIDDLEWARE=${AUTH_MIDDLEWARE}
-            TZ=${TZ}
-
             DOMAIN_TRAEFIK=${DOMAIN}
             DOMAIN_TINYAUTH=${DOMAIN_TINYAUTH}
             EOF
