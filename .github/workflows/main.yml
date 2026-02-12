@@ -15,9 +15,12 @@ jobs:
       - name: Deploy on remote server
         uses: appleboy/ssh-action@v1.2.0
         env:
+          # --- MAPPING DES SECRETS GITHUB ---
+          # Assurez-vous que ces noms correspondent EXACTEMENT à vos secrets sur GitHub
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          DOMAIN: ${{ secrets.DOMAIN }}
-          NETWORK_NAME: ${{ secrets.NETWORK_NAM }} 
+          DOMAIN_TRAEFIK: ${{ secrets.DOMAIN_TRAEFIK }}
+          DOMAIN_TINYAUTH: ${{ secrets.DOMAIN_TINYAUTH }}
+          NETWORK_NAME: ${{ secrets.NETWORK_NAM }} # Utilisation du nom avec NAM d'après votre image
           AUTH_MIDDLEWARE: ${{ secrets.AUTH_MIDDLEWARE }}
           TZ: ${{ secrets.TZ }}
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -35,15 +38,15 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_TOKEN,DOMAIN,NETWORK_NAME,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TRAEFIK_SUBDOMAIN,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
+          # Liste des variables à passer au script
+          envs: GH_TOKEN,DOMAIN_TRAEFIK,DOMAIN_TINYAUTH,NETWORK_NAME,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TRAEFIK_SUBDOMAIN,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
           script: |
             # 1. Préparation du réseau
             docker network create ${NETWORK_NAME} || true
             
-            # 2. Clonage et mise à jour des fichiers (Étapes 8 & 9)
+            # 2. Clonage et mise à jour des fichiers
             cd ~
             rm -rf temp_repo
-            # Correction ici: format d'URL pour le token
             git clone https://x-access-token:${GH_TOKEN}@github.com/Wmartel31/Serveur-Internet-Sample-Project.git temp_repo
             
             mkdir -p ~/srv
@@ -51,12 +54,13 @@ jobs:
             
             rm -rf ~/temp_repo
             
-            # 3. Étape 10, 11 & 12 : Configuration et Lancement par service
+            # 3. Étape 10 : Configuration et Lancement par service
 
             # --- TRAEFIK ---
             mkdir -p ~/srv/traefik
             cat <<EOF > ~/srv/traefik/.env
-            DOMAIN=${DOMAIN}
+            DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
+            DOMAIN_TINYAUTH=${DOMAIN_TINYAUTH}
             NETWORK_NAME=${NETWORK_NAME}
             TRAEFIK_SUBDOMAIN=${TRAEFIK_SUBDOMAIN}
             AUTH_MIDDLEWARE=${AUTH_MIDDLEWARE}
@@ -67,7 +71,7 @@ jobs:
             # --- TASKLIST ---
             mkdir -p ~/srv/tasklist
             cat <<EOF > ~/srv/tasklist/.env
-            DOMAIN=${DOMAIN}
+            DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
             NETWORK_NAME=${NETWORK_NAME}
             TASKLIST_SUBDOMAIN=${TASKLIST_SUBDOMAIN}
             DB_HOST=${DB_HOST}
@@ -80,7 +84,7 @@ jobs:
             # --- WIKI ---
             mkdir -p ~/srv/wiki
             cat <<EOF > ~/srv/wiki/.env
-            DOMAIN=${DOMAIN}
+            DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
             NETWORK_NAME=${NETWORK_NAME}
             WIKI_SUBDOMAIN=${WIKI_SUBDOMAIN}
             WIKI_PORT=${WIKI_PORT}
@@ -90,7 +94,7 @@ jobs:
             # --- MONITORING ---
             mkdir -p ~/srv/monitoring
             cat <<EOF > ~/srv/monitoring/.env
-            DOMAIN=${DOMAIN}
+            DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
             NETWORK_NAME=${NETWORK_NAME}
             UPTIME_SUBDOMAIN=${UPTIME_SUBDOMAIN}
             UPTIME_PORT=${UPTIME_PORT}
