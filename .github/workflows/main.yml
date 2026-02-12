@@ -1,6 +1,30 @@
 name: Deployement Workflow
-
+ 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch: # permet d'avoir un bouton "Run Workflow sur GitHub dans la section Actions"
+    branches: ["main"]
+  workflow_dispatch: # permet d'avoir un bouton "Run Workflow" sur GitHub dans la section Actions
+ 
+jobs:
+  Deploy-Docker-Infra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: Deploy on remote server
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: GH_TOKEN
+          script: |
+            # Traefik deployment
+            cd ~/srv/traefik
+            cat <<EOF > .env
+            APP_URL=$TRAEFIK_APP_URL
+            USERS=$TRAEFIK_USERS
+            EOF
