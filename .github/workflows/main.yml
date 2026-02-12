@@ -88,6 +88,9 @@ jobs:
             TRAEFIK_SUBDOMAIN=${TRAEFIK_SUBDOMAIN}
             AUTH_MIDDLEWARE=${AUTH_MIDDLEWARE}
             TZ=${TZ}
+
+            DOMAIN_TRAEFIK=${DOMAIN}
+            DOMAIN_TINYAUTH=${DOMAIN_TINYAUTH}
             EOF
             cd ~/srv/traefik && docker compose up -d --build --force-recreate
             
