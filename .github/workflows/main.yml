@@ -15,104 +15,78 @@ jobs:
       - name: Deploy on remote server
         uses: appleboy/ssh-action@v1.2.0
         env:
-          # --- MAPPING DES SECRETS GITHUB (CORRIGÉ SELON VOTRE IMAGE) ---
+          # --- MAPPING DES SECRETS GITHUB (Corrigés selon votre image) ---
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOMAIN_TRAEFIK: ${{ secrets.DOMAIN_TRAEFIK }}
           DOMAIN_TINYAUTH: ${{ secrets.DOMAIN_TINYAUTH }}
           
-          # Corrigé: Utilisation de DOMAIN_NAME au lieu de NETWORK_NAM
+          # Corrigé: Utilisation de DOMAIN_NAME pour le nom du réseau
           NETWORK_NAME: ${{ secrets.DOMAIN_NAME }} 
           
-          # Corrigé: Vérifiez bien que ces secrets existent dans l'image
-          DB_HOST: ${{ secrets.DB_HOST }} 
-          DB_NAME: ${{ secrets.DB_NAME }}
+          # Secrets spécifiques pour Tasklist
+          DOMAIN_TASKLIST: ${{ secrets.DOMAIN_TASKLIST }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD }}
+          BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
+          BACKEND_HOST: ${{ secrets.BACKEND_HOST }}
+          FRONTEND_PORT: ${{ secrets.FRONTEND_PORT }}
           
-          TASKLIST_SUBDOMAIN: ${{ secrets.DOMAIN_TASKLIST }} # Corrigé
-          WIKI_SUBDOMAIN: ${{ secrets.DOMAIN_WIKI }} # Corrigé
-          UPTIME_SUBDOMAIN: ${{ secrets.DOMAIN_UPTIME }} # Corrigé
-          
+          # Secrets pour Fail2Ban
           TZ: ${{ secrets.TZ }}
-          AUTH_MIDDLEWARE: ${{ secrets.AUTH_MIDDLEWARE }}
-          TRAEFIK_SUBDOMAIN: ${{ secrets.DOMAIN_TRAEFIK }} # Corrigé
-          WIKI_PORT: ${{ secrets.WIKI_PORT }}
-          UPTIME_PORT: ${{ secrets.UPTIME_PORT }}
-          F2B_PORT: ${{ secrets.F2B_PORT }}
+          F2B_PORT: ${{ secrets.FAIL2BAN_UI_PORT }}
+          
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Liste des variables à passer au script
-          envs: GH_TOKEN,DOMAIN_TRAEFIK,DOMAIN_TINYAUTH,NETWORK_NAME,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
+          # Liste des variables à passer au script SSH
+          envs: GH_TOKEN,DOMAIN_TRAEFIK,DOMAIN_TINYAUTH,NETWORK_NAME,DOMAIN_TASKLIST,DB_USER,DB_PASSWORD,DB_NAME,DB_ROOT_PASSWORD,BACKEND_PORT,BACKEND_HOST,FRONTEND_PORT,TZ,F2B_PORT
           script: |
-            # 1. Préparation du réseau
+            # 1. Préparation du réseau Docker
             docker network create ${NETWORK_NAME} || true
             
-            # 2. Clonage et mise à jour des fichiers
+            # 2. Clonage et mise à jour des fichiers du repo
             cd ~
             rm -rf temp_repo
             git clone https://x-access-token:${GH_TOKEN}@github.com/Wmartel31/Serveur-Internet-Sample-Project.git temp_repo
             
             mkdir -p ~/srv
             cp -r ~/temp_repo/srv/* ~/srv/
-            
             rm -rf ~/temp_repo
             
             # 3. Configuration et Lancement par service
 
-            # --- TRAEFIK ---
-            mkdir -p ~/srv/traefik
-            cat <<EOF > ~/srv/traefik/.env
-            DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
-            DOMAIN_TINYAUTH=${DOMAIN_TINYAUTH}
-            NETWORK_NAME=${NETWORK_NAME}
-            TRAEFIK_SUBDOMAIN=${DOMAIN_TRAEFIK}
-            AUTH_MIDDLEWARE=${AUTH_MIDDLEWARE}
-            TZ=${TZ}
-            EOF
-            cd ~/srv/traefik && docker compose up -d --build --force-recreate
-            
             # --- TASKLIST ---
             mkdir -p ~/srv/tasklist
+            # Génération du .env pour Tasklist
             cat <<EOF > ~/srv/tasklist/.env
-            DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
-            NETWORK_NAME=${NETWORK_NAME}
-            TASKLIST_SUBDOMAIN=${TASKLIST_SUBDOMAIN}
-            DB_HOST=${DB_HOST}
-            DB_NAME=${DB_NAME}
+            DOMAIN_TASKLIST=${DOMAIN_TASKLIST}
+            BACKEND_PORT=${BACKEND_PORT}
+            BACKEND_HOST=${BACKEND_HOST}
+            FRONTEND_PORT=${FRONTEND_PORT}
+            DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
             DB_USER=${DB_USER}
             DB_PASSWORD=${DB_PASSWORD}
+            DB_NAME=${DB_NAME}
             EOF
             cd ~/srv/tasklist && docker compose up -d --build --force-recreate
             
-            # --- WIKI ---
-            mkdir -p ~/srv/wiki
-            cat <<EOF > ~/srv/wiki/.env
-            DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
-            NETWORK_NAME=${NETWORK_NAME}
-            WIKI_SUBDOMAIN=${WIKI_SUBDOMAIN}
-            WIKI_PORT=${WIKI_PORT}
-            EOF
-            cd ~/srv/wiki && docker compose up -d --build --force-recreate
-            
-            # --- MONITORING ---
-            mkdir -p ~/srv/monitoring
-            cat <<EOF > ~/srv/monitoring/.env
-            DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
-            NETWORK_NAME=${NETWORK_NAME}
-            UPTIME_SUBDOMAIN=${UPTIME_SUBDOMAIN}
-            UPTIME_PORT=${UPTIME_PORT}
-            EOF
-            cd ~/srv/monitoring && docker compose up -d --build --force-recreate
+            # --- TRAEFIK (si vous avez un dossier traefik) ---
+            if [ -d "~/srv/traefik" ]; then
+              cd ~/srv/traefik && docker compose up -d --build --force-recreate
+            fi
             
             # --- FAIL2BAN ---
-            mkdir -p ~/srv/fail2ban
-            cat <<EOF > ~/srv/fail2ban/.env
-            F2B_PORT=${F2B_PORT}
-            TZ=${TZ}
-            EOF
-            cd ~/srv/fail2ban && docker compose up -d --build --force-recreate
+            if [ -d "~/srv/fail2ban" ]; then
+              mkdir -p ~/srv/fail2ban
+              cat <<EOF > ~/srv/fail2ban/.env
+              F2B_PORT=${F2B_PORT}
+              TZ=${TZ}
+              EOF
+              cd ~/srv/fail2ban && docker compose up -d --build --force-recreate
+            fi
             
-            # Maintenance
+            # Maintenance: Nettoyage des images inutilisées
             docker image prune -f
