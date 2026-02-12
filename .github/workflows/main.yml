@@ -19,9 +19,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOMAIN: ${{ secrets.DOMAIN_TRAEFIK }}
           DOMAIN_TINYAUTH: ${{ secrets.DOMAIN_TINYAUTH }}
-          NETWORK_NAME: ${{ secrets.DOMAIN_NAME }} 
-          TRAEFIK_SUBDOMAIN: ${{ secrets.TRAEFIK_SUBDOMAIN }}
           
+          # Ici, force le nom du réseau à "proxy" comme demandé
+          NETWORK_NAME: proxy 
+          
+          TRAEFIK_SUBDOMAIN: ${{ secrets.TRAEFIK_SUBDOMAIN }}
           AUTH_MIDDLEWARE: ${{ secrets.AUTH_MIDDLEWARE }}
           TZ: ${{ secrets.TZ }}
           
@@ -54,7 +56,7 @@ jobs:
           script: |
             # 1. Vérification de git (pour Rocky Linux)
             if ! command -v git &> /dev/null; then
-                echo "Erreur: git n'est pas installé sur le serveur."
+                echo "Erreur: git n'est pas installé."
                 exit 1
             fi
 
