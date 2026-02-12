@@ -23,18 +23,15 @@ jobs:
           envs: GH_TOKEN
           script: |
             # 1. Cloner le dépôt dans un dossier temporaire
-            cd ~                
+            cd ~
             rm -rf Serveur-Internet-Sample-Project
             git clone https://$GH_TOKEN@github.com/Wmartel31/Serveur-Internet-Sample-Project.git
             
-            # 2. Copier les fichiers de config SAUF les .env
-            # On utilise une boucle pour copier dossier par dossier pour ne pas écraser les .env
-            cp -r ~/Serveur-Internet-Sample-Project/srv/traefik/* ~/srv/traefik/
-            # Répétez pour les autres dossiers si nécessaire
-            # cp -r ~/Serveur-Internet-Sample-Project/srv/wiki/* ~/srv/wiki/
+            # 2. Copier les fichiers de config vers le dossier actif
+            cp -r ~/Serveur-Internet-Sample-Project/srv/traefik/* ~/srv/traefik/                
             
-            # 3. Nettoyer le dossier temporaire cloné
-            rm -rf Serveur-Internet-Sample-Project
+            # 3. Nettoyer le dossier temporaire cloné (Votre étape 9)
+            rm -rf Serveur-Internet-Sample-Project                
             
             # 4. Lancer Traefik
             cd ~/srv/traefik
