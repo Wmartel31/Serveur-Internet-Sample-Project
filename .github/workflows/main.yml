@@ -1,0 +1,6 @@
+name: Deployement Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # permet d'avoir un bouton "Run Workflow sur GitHub dans la section Actions"
