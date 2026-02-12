@@ -15,9 +15,13 @@ jobs:
       - name: Deploy on remote server
         uses: appleboy/ssh-action@v1.2.0
         env:
-          # --- MAPPING DES SECRETS GITHUB ---
+          # --- MAPPING DES SECRETS GITHUB (Corrigés) ---
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          DOMAIN: ${{ secrets.DOMAIN }}
+          
+          # Corrigé: Utilisation des noms de secrets réels
+          DOMAIN: ${{ secrets.DOMAIN_TRAEFIK }}
+          DOMAIN_TINYAUTH: ${{ secrets.DOMAIN_TINYAUTH }}
+          
           NETWORK_NAME: ${{ secrets.NETWORK_NAM }}
           AUTH_MIDDLEWARE: ${{ secrets.AUTH_MIDDLEWARE }}
           TZ: ${{ secrets.TZ }}
@@ -32,15 +36,16 @@ jobs:
           WIKI_PORT: ${{ secrets.WIKI_PORT }}
           UPTIME_PORT: ${{ secrets.UPTIME_PORT }}
           F2B_PORT: ${{ secrets.F2B_PORT }}
+          
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_TOKEN,DOMAIN,NETWORK_NAME,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TRAEFIK_SUBDOMAIN,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
+          envs: GH_TOKEN,DOMAIN,DOMAIN_TINYAUTH,NETWORK_NAME,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TRAEFIK_SUBDOMAIN,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
           script: |
             # 1. Vérification de git (pour Rocky Linux)
             if ! command -v git &> /dev/null; then
-                echo "Erreur: git n'est pas installé ou n'est pas dans le PATH."
+                echo "Erreur: git n'est pas installé."
                 exit 1
             fi
 
@@ -62,6 +67,7 @@ jobs:
             mkdir -p ~/srv/traefik
             cat <<EOF > ~/srv/traefik/.env
             DOMAIN=${DOMAIN}
+            DOMAIN_TINYAUTH=${DOMAIN_TINYAUTH}
             NETWORK_NAME=${NETWORK_NAME}
             TRAEFIK_SUBDOMAIN=${TRAEFIK_SUBDOMAIN}
             AUTH_MIDDLEWARE=${AUTH_MIDDLEWARE}
