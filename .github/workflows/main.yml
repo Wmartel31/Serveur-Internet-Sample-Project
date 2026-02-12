@@ -15,12 +15,14 @@ jobs:
       - name: Deploy on remote server
         uses: appleboy/ssh-action@v1.2.0
         env:
-          # --- MAPPING DES SECRETS GITHUB ---
+          # --- MAPPING DES SECRETS GITHUB (CORRIGÉ) ---
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          
+          # VÉRIFIEZ CES NOMS DANS GITHUB
           DOMAIN: ${{ secrets.DOMAIN_TRAEFIK }}
           DOMAIN_TINYAUTH: ${{ secrets.DOMAIN_TINYAUTH }}
           
-          # Ici, force le nom du réseau à "proxy" comme demandé
+          # Force le nom du réseau à "proxy"
           NETWORK_NAME: proxy 
           
           TRAEFIK_SUBDOMAIN: ${{ secrets.TRAEFIK_SUBDOMAIN }}
@@ -39,10 +41,13 @@ jobs:
           TASKLIST_SUBDOMAIN: ${{ secrets.TASKLIST_SUBDOMAIN }}
 
           # Wiki
+          DOMAIN_NAME_WIKI: ${{ secrets.DOMAIN_NAME }} # <--- Assurez-vous d'avoir ce secret
           WIKI_SUBDOMAIN: ${{ secrets.WIKI_SUBDOMAIN }}
           WIKI_PORT: ${{ secrets.WIKI_PORT }}
           
           # Monitoring & Fail2ban
+          DOMAIN_UPTIME: ${{ secrets.DOMAIN_UPTIME }}
+          DOMAIN_FAIL2BAN: ${{ secrets.DOMAIN_FAIL2BAN }}
           UPTIME_SUBDOMAIN: ${{ secrets.UPTIME_SUBDOMAIN }}
           UPTIME_PORT: ${{ secrets.UPTIME_PORT }}
           F2B_PORT: ${{ secrets.F2B_PORT }}
@@ -52,7 +57,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # LISTE COMPLETE DES VARIABLES PASSEES AU SCRIPT
-          envs: GH_TOKEN,DOMAIN,DOMAIN_TINYAUTH,NETWORK_NAME,TRAEFIK_SUBDOMAIN,AUTH_MIDDLEWARE,TZ,DOMAIN_TASKLIST,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,BACKEND_PORT,BACKEND_HOST,FRONTEND_PORT,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,WIKI_PORT,UPTIME_SUBDOMAIN,UPTIME_PORT,F2B_PORT
+          envs: GH_TOKEN,DOMAIN,DOMAIN_TINYAUTH,NETWORK_NAME,TRAEFIK_SUBDOMAIN,AUTH_MIDDLEWARE,TZ,DOMAIN_TASKLIST,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,BACKEND_PORT,BACKEND_HOST,FRONTEND_PORT,TASKLIST_SUBDOMAIN,DOMAIN_NAME_WIKI,WIKI_SUBDOMAIN,WIKI_PORT,DOMAIN_UPTIME,DOMAIN_FAIL2BAN,UPTIME_SUBDOMAIN,UPTIME_PORT,F2B_PORT
           script: |
             # 1. Vérification de git (pour Rocky Linux)
             if ! command -v git &> /dev/null; then
@@ -105,7 +110,7 @@ jobs:
             # --- WIKI ---
             mkdir -p ~/srv/wiki
             cat <<EOF > ~/srv/wiki/.env
-            DOMAIN_NAME=${DOMAIN_NAME}
+            DOMAIN_NAME=${DOMAIN_NAME_WIKI}
             NETWORK_NAME=${NETWORK_NAME}
             WIKI_SUBDOMAIN=${WIKI_SUBDOMAIN}
             WIKI_PORT=${WIKI_PORT}
