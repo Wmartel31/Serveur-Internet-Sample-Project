@@ -15,22 +15,27 @@ jobs:
       - name: Deploy on remote server
         uses: appleboy/ssh-action@v1.2.0
         env:
-          # --- MAPPING DES SECRETS GITHUB ---
-          # Assurez-vous que ces noms correspondent EXACTEMENT à vos secrets sur GitHub
+          # --- MAPPING DES SECRETS GITHUB (CORRIGÉ SELON VOTRE IMAGE) ---
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOMAIN_TRAEFIK: ${{ secrets.DOMAIN_TRAEFIK }}
           DOMAIN_TINYAUTH: ${{ secrets.DOMAIN_TINYAUTH }}
-          NETWORK_NAME: ${{ secrets.NETWORK_NAM }} # Utilisation du nom avec NAM d'après votre image
-          AUTH_MIDDLEWARE: ${{ secrets.AUTH_MIDDLEWARE }}
-          TZ: ${{ secrets.TZ }}
-          DB_HOST: ${{ secrets.DB_HOST }}
+          
+          # Corrigé: Utilisation de DOMAIN_NAME au lieu de NETWORK_NAM
+          NETWORK_NAME: ${{ secrets.DOMAIN_NAME }} 
+          
+          # Corrigé: Vérifiez bien que ces secrets existent dans l'image
+          DB_HOST: ${{ secrets.DB_HOST }} 
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          TRAEFIK_SUBDOMAIN: ${{ secrets.TRAEFIK_SUBDOMAIN }}
-          TASKLIST_SUBDOMAIN: ${{ secrets.TASKLIST_SUBDOMAIN }}
-          WIKI_SUBDOMAIN: ${{ secrets.WIKI_SUBDOMAIN }}
-          UPTIME_SUBDOMAIN: ${{ secrets.UPTIME_SUBDOMAIN }}
+          
+          TASKLIST_SUBDOMAIN: ${{ secrets.DOMAIN_TASKLIST }} # Corrigé
+          WIKI_SUBDOMAIN: ${{ secrets.DOMAIN_WIKI }} # Corrigé
+          UPTIME_SUBDOMAIN: ${{ secrets.DOMAIN_UPTIME }} # Corrigé
+          
+          TZ: ${{ secrets.TZ }}
+          AUTH_MIDDLEWARE: ${{ secrets.AUTH_MIDDLEWARE }}
+          TRAEFIK_SUBDOMAIN: ${{ secrets.DOMAIN_TRAEFIK }} # Corrigé
           WIKI_PORT: ${{ secrets.WIKI_PORT }}
           UPTIME_PORT: ${{ secrets.UPTIME_PORT }}
           F2B_PORT: ${{ secrets.F2B_PORT }}
@@ -39,7 +44,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # Liste des variables à passer au script
-          envs: GH_TOKEN,DOMAIN_TRAEFIK,DOMAIN_TINYAUTH,NETWORK_NAME,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TRAEFIK_SUBDOMAIN,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
+          envs: GH_TOKEN,DOMAIN_TRAEFIK,DOMAIN_TINYAUTH,NETWORK_NAME,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
           script: |
             # 1. Préparation du réseau
             docker network create ${NETWORK_NAME} || true
@@ -54,7 +59,7 @@ jobs:
             
             rm -rf ~/temp_repo
             
-            # 3. Étape 10 : Configuration et Lancement par service
+            # 3. Configuration et Lancement par service
 
             # --- TRAEFIK ---
             mkdir -p ~/srv/traefik
@@ -62,7 +67,7 @@ jobs:
             DOMAIN_TRAEFIK=${DOMAIN_TRAEFIK}
             DOMAIN_TINYAUTH=${DOMAIN_TINYAUTH}
             NETWORK_NAME=${NETWORK_NAME}
-            TRAEFIK_SUBDOMAIN=${TRAEFIK_SUBDOMAIN}
+            TRAEFIK_SUBDOMAIN=${DOMAIN_TRAEFIK}
             AUTH_MIDDLEWARE=${AUTH_MIDDLEWARE}
             TZ=${TZ}
             EOF
