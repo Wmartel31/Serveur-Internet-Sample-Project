@@ -15,21 +15,23 @@ jobs:
       - name: Deploy on remote server
         uses: appleboy/ssh-action@v1.2.0
         env:
-          # --- MAPPING DES SECRETS GITHUB (Corrigés) ---
+          # --- MAPPING DES SECRETS GITHUB (CORRIGÉ) ---
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          
-          # Corrigé: Utilisation des noms de secrets réels
           DOMAIN: ${{ secrets.DOMAIN_TRAEFIK }}
           DOMAIN_TINYAUTH: ${{ secrets.DOMAIN_TINYAUTH }}
           
-          NETWORK_NAME: ${{ secrets.NETWORK_NAM }}
+          # Ici, utilisez les VRAIS noms de vos secrets GitHub
+          # Assurez-vous que les secrets NETWORK_NAM et TRAEFIK_SUBDOMAIN existent
+          NETWORK_NAME: ${{ secrets.NETWORK_NAM }} # <--- CORRIGÉ
+          TRAEFIK_SUBDOMAIN: ${{ secrets.TRAEFIK_SUBDOMAIN }} # <--- CORRIGÉ
+          
           AUTH_MIDDLEWARE: ${{ secrets.AUTH_MIDDLEWARE }}
           TZ: ${{ secrets.TZ }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          TRAEFIK_SUBDOMAIN: ${{ secrets.TRAEFIK_SUBDOMAIN }}
+          
           TASKLIST_SUBDOMAIN: ${{ secrets.TASKLIST_SUBDOMAIN }}
           WIKI_SUBDOMAIN: ${{ secrets.WIKI_SUBDOMAIN }}
           UPTIME_SUBDOMAIN: ${{ secrets.UPTIME_SUBDOMAIN }}
@@ -41,7 +43,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_TOKEN,DOMAIN,DOMAIN_TINYAUTH,NETWORK_NAME,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TRAEFIK_SUBDOMAIN,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
+          # Assurez-vous que toutes les variables sont listées ici
+          envs: GH_TOKEN,DOMAIN,DOMAIN_TINYAUTH,NETWORK_NAME,TRAEFIK_SUBDOMAIN,AUTH_MIDDLEWARE,TZ,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD,TASKLIST_SUBDOMAIN,WIKI_SUBDOMAIN,UPTIME_SUBDOMAIN,WIKI_PORT,UPTIME_PORT,F2B_PORT
           script: |
             # 1. Vérification de git (pour Rocky Linux)
             if ! command -v git &> /dev/null; then
