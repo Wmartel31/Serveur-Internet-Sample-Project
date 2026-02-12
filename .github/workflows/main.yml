@@ -17,15 +17,15 @@ jobs:
         env:
           # --- MAPPING DES SECRETS GITHUB (CORRIGÉ) ---
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          
-          # VÉRIFIEZ CES NOMS DANS GITHUB
           DOMAIN: ${{ secrets.DOMAIN_TRAEFIK }}
           DOMAIN_TINYAUTH: ${{ secrets.DOMAIN_TINYAUTH }}
           
           # Force le nom du réseau à "proxy"
           NETWORK_NAME: proxy 
           
-          TRAEFIK_SUBDOMAIN: ${{ secrets.TRAEFIK_SUBDOMAIN }}
+          # Assurez-vous que ces secrets existent
+          TRAEFIK_SUBDOMAIN: ${{ secrets.TRAEFIK_SUBDOMAIN }} 
+          
           AUTH_MIDDLEWARE: ${{ secrets.AUTH_MIDDLEWARE }}
           TZ: ${{ secrets.TZ }}
           
@@ -41,7 +41,7 @@ jobs:
           TASKLIST_SUBDOMAIN: ${{ secrets.TASKLIST_SUBDOMAIN }}
 
           # Wiki
-          DOMAIN_NAME_WIKI: ${{ secrets.DOMAIN_NAME }} # <--- Assurez-vous d'avoir ce secret
+          DOMAIN_NAME_WIKI: ${{ secrets.DOMAIN_NAME }}
           WIKI_SUBDOMAIN: ${{ secrets.WIKI_SUBDOMAIN }}
           WIKI_PORT: ${{ secrets.WIKI_PORT }}
           
