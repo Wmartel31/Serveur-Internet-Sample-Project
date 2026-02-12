@@ -1,0 +1,4 @@
+tls:
+  certificates:
+    - certFile: /etc/letsencrypt/live/williammartel.com/fullchain.pem
+      keyFile: /etc/letsencrypt/live/williammartel.com/privkey.pem

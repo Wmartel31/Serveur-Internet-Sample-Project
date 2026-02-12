@@ -1,0 +1,60 @@
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--api.dashboard=true"
+      - "--api.insecure=false"  # pas d'accès direct sur 8080
+      - "--providers.file.directory=/dynamic"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/root/srv/traefik/dynamic:/dynamic:ro"
+      - "/etc/letsencrypt:/etc/letsencrypt:ro"
+    networks:
+      - proxy
+    labels:
+      # Dashboard uniquement sur le sous-domaine traefik.williammartel.com
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`${DOMAIN_TRAEFIK}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.middlewares=tinyauth"
+
+  tinyauth:
+    image: ghcr.io/steveiliop56/tinyauth:v4
+    container_name: tinyauth
+    restart: unless-stopped
+    volumes:
+      - "/srv/tinyauth/data:/data"
+    environment:
+      APP_URL: https://${DOMAIN_TINYAUTH}
+      USERS: user:$$2a$$10$$UdLYoJ5lgPsC0RKqYH/jMua7zIn0g9kPqWmhYayJYLaZQ/FTmH2/u
+      PROVIDERS_GOOGLE_CLIENT_ID: 154521297282-gdnk3iikltvcuvgek9t5svd1ooui590h.apps.googleusercontent.com
+      PROVIDERS_GOOGLE_CLIENT_SECRET: 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
+      OAUTH_WHITELIST: wmartel3117@gmail.com
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tinyauth.rule=Host(`${DOMAIN_TINYAUTH}`)"
+      - "traefik.http.routers.tinyauth.entrypoints=websecure"
+      - "traefik.http.routers.tinyauth.tls=true"
+      - "traefik.http.services.tinyauth.loadbalancer.server.port=3000"
+      - "traefik.http.routers.tinyauth.middlewares=tinyauth-stripprefix"
+      - "traefik.http.middlewares.tinyauth-stripprefix.stripprefix.prefixes="
+      - "traefik.http.middlewares.tinyauth.forwardauth.address=http://tinyauth:3000/api/auth/traefik"
+
+networks:
+  proxy:
+    external: true

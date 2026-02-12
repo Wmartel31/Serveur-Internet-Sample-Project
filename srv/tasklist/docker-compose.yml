@@ -1,0 +1,50 @@
+services:
+  frontend:
+    image: wmartel31/frontend:latest
+    container_name: frontend
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_TASKLIST}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=${FRONTEND_PORT}"
+      - "traefik.http.routers.frontend.middlewares=tinyauth"
+
+  backend:
+    image: wmartel31/backend:latest
+    container_name: backend
+    networks:
+      - proxy
+    environment:
+      DB_HOST: database
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      PORT: ${BACKEND_PORT}
+      HOST: ${BACKEND_HOST}
+    depends_on:
+      - database
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${DOMAIN_TASKLIST}`) && PathPrefix(`/api/tasks`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.services.backend.loadbalancer.server.port=${BACKEND_PORT}"
+
+  database:
+    image: wmartel31/database:latest
+    container_name: database
+    networks:
+      - proxy
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+    labels:
+      - "traefik.enable=false"
+
+networks:
+  proxy:
+    external: true
